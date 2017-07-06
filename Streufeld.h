@@ -21,6 +21,7 @@
 #define SUCHFELD
 
 #include <iostream>
+#include <stdint.h>
 
 using namespace std;
 
@@ -42,9 +43,16 @@ class Streufeld
    uint64_t m_anzahlBesetzt;
    Eintrag* m_eintraege;
 public:
-   Streufeld(uint64_t kapazitaet,bool& erfolg):m_kapazitaet(0),
-                                              m_anzahlBesetzt(0)
+   Streufeld(uint64_t kapazitaet,bool& erfolg):m_besetzt(NULL),
+                                               m_kapazitaet(0),
+                                               m_anzahlBesetzt(0),                                               
+                                               m_eintraege(NULL)
    {
+     if( kapazitaet < 1)
+     {
+       erfolg = false;
+       return;
+     }
      m_eintraege = new Eintrag[kapazitaet];
      if( m_eintraege == NULL )
      {
@@ -82,14 +90,14 @@ private:
                      uint64_t &stelle, 
                      Wert& wert)
    {
-      cout << "findeIntern: m_anzahlBesetzt:" << m_anzahlBesetzt << " schluessel:" << schluessel << 
-              " stelle:" << stelle << endl;
+      //cout << "findeIntern: m_anzahlBesetzt:" << m_anzahlBesetzt << " schluessel:" << schluessel << 
+      //        " stelle:" << stelle << endl;
       uint64_t stelleKopie = stelle;
       if( m_anzahlBesetzt > 0)
       {
          while( besetzt(stelle) )
          {
-            cout << "stelle:" << stelle << endl;
+            //cout << "stelle:" << stelle << endl;
             if( SchluesselAdapter::gleich(m_eintraege[stelle].m_schluessel, schluessel) )
             {
                wert = m_eintraege[stelle].m_wert;
@@ -136,14 +144,14 @@ public:
              {
                return false;
              }
-             for(uint64_t stelle=0; stelle < m_kapazitaet; stelle++)
+             for(uint64_t stelle2=0; stelle2 < m_kapazitaet; stelle2++)
              {
-                if( besetzt(stelle) )
+                if( besetzt(stelle2) )
                 {
-                   suchfeldGroesser->trageEin(m_eintraege[stelle].m_schluessel,
-                                              m_eintraege[stelle].m_wert);
-                   WertAdapter::loesche(m_eintraege[stelle].m_wert);
-                   SchluesselAdapter::loesche(m_eintraege[stelle].m_schluessel);
+                   suchfeldGroesser->trageEin(m_eintraege[stelle2].m_schluessel,
+                                              m_eintraege[stelle2].m_wert);
+                   WertAdapter::loesche(m_eintraege[stelle2].m_wert);
+                   SchluesselAdapter::loesche(m_eintraege[stelle2].m_schluessel);
                 } 
              }
              delete[] m_eintraege;
