@@ -21,6 +21,11 @@ public:
    {
       schluessel.leere(true);
    }
+
+   static void loescheEndgueltig(Zeichenkette& schluessel)
+   {
+      schluessel.leere(true);
+   }
 };
 
 /* Adapter-Klasse fuer Wert-Objekte vom Typ Zeichenkette */
@@ -28,6 +33,11 @@ class WertAdapterZK
 {
 public:
   static void loesche(Zeichenkette& wert)
+  {
+      wert.leere(true);
+  }
+
+  static void loescheEndgueltig(Zeichenkette& wert)
   {
       wert.leere(true);
   }

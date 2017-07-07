@@ -7,6 +7,8 @@
 #include <iostream>
 #include "Streufeld.h"
 #include "HashAdapterZK.h"
+#include "HashAdapterZK_cstring.h"
+#include "Nuetzlich.h"
 
 using namespace std;
 
@@ -14,6 +16,17 @@ using namespace std;
 
 int main(int argc,char** argv)
 {
+   assert ( naechstGroessereZweierPotenz(0) == 0 );
+   assert ( naechstGroessereZweierPotenz(13) == 16 );
+
+   assert ( naechstGroessereZweierPotenz(2) == 2 );
+   assert ( naechstGroessereZweierPotenz(1) == 1 );
+   assert ( naechstGroessereZweierPotenz(4) == 4 );
+   assert ( naechstGroessereZweierPotenz(5) == 8 );
+
+   
+
+
    bool erfolg=false;
    Streufeld<Zeichenkette,Zeichenkette,SchlAdapterZK,WertAdapterZK> sf(10,erfolg);
 
@@ -53,8 +66,9 @@ int main(int argc,char** argv)
    assert( schluessel == "DDI");
 
 
+   const uint64_t c_anzahlEintrage = 10000;
    
-   for(uint64_t i=0; i < 100; i++)
+   for(uint64_t i=0; i < c_anzahlEintrage; i++)
    {
       schluessel = "AnfangderZeichenkette_";
       schluessel.dazuZahl(1000+i,10);
@@ -64,7 +78,7 @@ int main(int argc,char** argv)
       
       assert( sf.trageEin(schluessel,wert) );
    }
-   for(int64_t i=99; i >=0; i--)
+   for(int64_t i=c_anzahlEintrage-1; i >=0; i--)
    {
       schluessel = "AnfangderZeichenkette_";
       schluessel.dazuZahl(1000+i,10);
@@ -76,6 +90,39 @@ int main(int argc,char** argv)
       assert( sf.finde(schluessel,wertGefunden) );
       assert( wert == wertGefunden );
    }
+
+   
+   //Pruefung C Strings
+   Streufeld<char*,char*,SchlAdapterZK_cstring,SchlAdapterZK_cstring> sfcs(1,erfolg);
+   for(uint64_t i=0; i < c_anzahlEintrage; i++)
+   {
+      schluessel = "AnfangderZeichenkette_";
+      schluessel.dazuZahl(1000+i,10);
+
+      wert = "wiesel";
+      wert.dazuZahl(1500+i,10);
+
+      char* schlCS = new char[schluessel.laenge()+1];
+      strcpy(schlCS,schluessel.zkNT());
+
+      char* wertCS = new char[wert.laenge()+1];
+      strcpy(wertCS,wert.zkNT());
+      
+      assert( sfcs.trageEin(schlCS,wertCS) );
+   }
+   for(int64_t i=c_anzahlEintrage-1; i >=0; i--)
+   {
+      schluessel = "AnfangderZeichenkette_";
+      schluessel.dazuZahl(1000+i,10);
+
+      wert = "wiesel";
+      wert.dazuZahl(1500+i,10);
   
+      char* wertGefunden(NULL);
+      assert( sfcs.finde( (char*)schluessel.zkNT(),wertGefunden) );
+      assert( wert == wertGefunden );
+   }
+   
+
    cout << "Pruefung der Streufeld-Klasse erfolgreich" << endl;
 }

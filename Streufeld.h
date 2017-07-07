@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include <stdint.h>
+#include "Nuetzlich.h"
 
 using namespace std;
 
@@ -40,19 +41,23 @@ class Streufeld
 
    uint8_t* m_besetzt;//bitfeld, das Besetzung einer Stelle anzeigt.
    uint64_t m_kapazitaet;
+   uint64_t m_neuHashSchwelle;
    uint64_t m_anzahlBesetzt;
    Eintrag* m_eintraege;
 public:
    Streufeld(uint64_t kapazitaet,bool& erfolg):m_besetzt(NULL),
                                                m_kapazitaet(0),
+                                               m_neuHashSchwelle(0),
                                                m_anzahlBesetzt(0),                                               
                                                m_eintraege(NULL)
    {
-     if( kapazitaet < 1)
+     if( kapazitaet < 2)
      {
-       erfolg = false;
-       return;
+         kapazitaet = 2;
      }
+     kapazitaet = naechstGroessereZweierPotenz(kapazitaet);
+     cout << "kapazitaet:" << kapazitaet << endl;
+
      m_eintraege = new Eintrag[kapazitaet];
      if( m_eintraege == NULL )
      {
@@ -73,10 +78,16 @@ public:
        m_besetzt[i] = 0;
      }
      m_kapazitaet = kapazitaet;
+     m_neuHashSchwelle = uint64_t(float(m_kapazitaet)*0.7f);
      erfolg = true;
    }
 
+   
+
 private:
+
+
+
    bool besetzt(uint64_t stelle)
    {
      return m_besetzt[stelle >> 3] & ( 1 << (stelle & 7) );
@@ -114,19 +125,62 @@ private:
       return false;
    }
 
+   /* verdopple die Kapazitaet der Tabelle */
+   bool wachse()
+   {
+       bool erfolg; 
+       uint64_t neuKapazitaet = m_kapazitaet << 1;
+       if( neuKapazitaet < m_kapazitaet )
+       {
+          return false;
+       }
+       Streufeld* suchfeldGroesser = 
+                    new Streufeld<Schluessel,Wert,SchluesselAdapter,WertAdapter>( neuKapazitaet, erfolg);
+       if( !erfolg || (suchfeldGroesser == NULL) )
+       {
+         return false;
+       }
+       for(uint64_t stelle2=0; stelle2 < m_kapazitaet; stelle2++)
+       {
+          if( besetzt(stelle2) )
+          {
+             if( !suchfeldGroesser->trageEin(m_eintraege[stelle2].m_schluessel,
+                                             m_eintraege[stelle2].m_wert) )
+             {
+                 return false;
+             }
+             WertAdapter::loesche(m_eintraege[stelle2].m_wert);
+             SchluesselAdapter::loesche(m_eintraege[stelle2].m_schluessel);
+          } 
+       }
+       delete[] m_eintraege;
+       m_eintraege = suchfeldGroesser->m_eintraege;
+       suchfeldGroesser->m_eintraege = NULL;
+       m_kapazitaet = suchfeldGroesser->m_kapazitaet;
+       m_neuHashSchwelle = suchfeldGroesser->m_neuHashSchwelle;
+       delete[] m_besetzt;
+       m_besetzt = suchfeldGroesser->m_besetzt;
+       suchfeldGroesser->m_besetzt = NULL;
+
+       suchfeldGroesser->m_kapazitaet = 0;
+       suchfeldGroesser->m_anzahlBesetzt = 0;
+       delete suchfeldGroesser;
+       return true;
+   }
+
 public:
    bool finde(const Schluessel& schluessel,
               Wert& wert) 
    {
       uint64_t randomisiert = SchluesselAdapter::randomisiere(schluessel);
-      uint64_t stelle = randomisiert % m_kapazitaet;
+      uint64_t stelle = randomisiert & (m_kapazitaet-1);
       return findeIntern(schluessel,stelle, wert); 
    }
 
    bool trageEin(const Schluessel& schluessel, const Wert& wert)
    {
       uint64_t randomisiert = SchluesselAdapter::randomisiere(schluessel);   
-      uint64_t stelle = randomisiert % m_kapazitaet;
+      uint64_t stelle = randomisiert & (m_kapazitaet-1);
       Wert altWert;
       if( findeIntern(schluessel, stelle, altWert) )
       {
@@ -135,42 +189,16 @@ public:
       }
       else
       { 
-         if( float(m_kapazitaet *0.80f) < (m_anzahlBesetzt+1) )
+         if( m_neuHashSchwelle == m_anzahlBesetzt  )
          {
-             bool erfolg; 
-             Streufeld* suchfeldGroesser = 
-                 new Streufeld<Schluessel,Wert,SchluesselAdapter,WertAdapter>( (m_kapazitaet+1)*2, erfolg);
-             if( suchfeldGroesser == NULL )
-             {
-               return false;
-             }
-             for(uint64_t stelle2=0; stelle2 < m_kapazitaet; stelle2++)
-             {
-                if( besetzt(stelle2) )
-                {
-                   suchfeldGroesser->trageEin(m_eintraege[stelle2].m_schluessel,
-                                              m_eintraege[stelle2].m_wert);
-                   WertAdapter::loesche(m_eintraege[stelle2].m_wert);
-                   SchluesselAdapter::loesche(m_eintraege[stelle2].m_schluessel);
-                } 
-             }
-             delete[] m_eintraege;
-             m_eintraege = suchfeldGroesser->m_eintraege;
-             suchfeldGroesser->m_eintraege = NULL;
-             m_kapazitaet = suchfeldGroesser->m_kapazitaet;
-             delete[] m_besetzt;
-             m_besetzt = suchfeldGroesser->m_besetzt;
-             suchfeldGroesser->m_besetzt = NULL;
-
-             delete suchfeldGroesser;
-
+             wachse();
              randomisiert = SchluesselAdapter::randomisiere(schluessel);
-             stelle = randomisiert % m_kapazitaet;
-         }
+         }         
+         stelle = randomisiert & (m_kapazitaet-1);
          while( besetzt(stelle) )
          {
             stelle++; 
-            if( stelle== m_kapazitaet )
+            if( stelle == m_kapazitaet )
             {
               stelle= 0;
             }
@@ -189,8 +217,8 @@ public:
        uint64_t stelle;
        if( findeIntern(schluessel,stelle,wert) )
        {
-          SchluesselAdapter::loesche(m_eintraege[stelle].m_schluessel);
-          WertAdapter::loesche(m_eintraege[stelle].m_wert);
+          SchluesselAdapter::loescheEndgueltig(m_eintraege[stelle].m_schluessel);
+          WertAdapter::loescheEndgueltig(m_eintraege[stelle].m_wert);
           char inversMaske = 0xFF ^ (1 << (stelle & 7));
           m_besetzt[stelle >> 3] &= inversMaske;       
           m_anzahlBesetzt--;
@@ -198,10 +226,23 @@ public:
        }
        return false;
    } 
+
    ~Streufeld()
    {
+       for(uint64_t stelle=0; stelle < m_kapazitaet; stelle++)
+       {
+          if( m_besetzt[stelle >> 3] & (1 << (stelle & 7)) )
+          {
+              SchluesselAdapter::loescheEndgueltig(m_eintraege[stelle].m_schluessel);
+              WertAdapter::loescheEndgueltig(m_eintraege[stelle].m_wert);
+          }
+       }
        delete[] m_eintraege;
+       m_eintraege = NULL;
        delete[] m_besetzt;
+       m_besetzt = NULL;
+       m_kapazitaet = 0;
+       m_anzahlBesetzt = 0;
    } 
 };
 
