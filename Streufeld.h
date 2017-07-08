@@ -56,7 +56,6 @@ public:
          kapazitaet = 2;
      }
      kapazitaet = naechstGroessereZweierPotenz(kapazitaet);
-     cout << "kapazitaet:" << kapazitaet << endl;
 
      m_eintraege = new Eintrag[kapazitaet];
      if( m_eintraege == NULL )
@@ -64,7 +63,11 @@ public:
        erfolg = false;
        return;
      } 
-     uint64_t besetztFeldLaenge = (kapazitaet >> 3) + 1;
+     uint64_t besetztFeldLaenge = kapazitaet >> 3;
+     if( besetztFeldLaenge == 0 )
+     {
+        besetztFeldLaenge = 1;
+     }
      m_besetzt   = new uint8_t[besetztFeldLaenge];
      if( m_besetzt == NULL )
      {
@@ -91,6 +94,12 @@ private:
    bool besetzt(uint64_t stelle)
    {
      return m_besetzt[stelle >> 3] & ( 1 << (stelle & 7) );
+   }
+
+   void loescheInMaske(uint64_t stelle)
+   {
+      uint8_t inversMaske = 0xFF ^ (1 << (stelle & 7));
+      m_besetzt[stelle >> 3] &= inversMaske;
    }
 
    /* versuche den Eintrag mit dem gegebenen Schluessel zu finden.
@@ -211,20 +220,93 @@ public:
       return true;
    } 
    
+   
    bool loesche(const Schluessel& schluessel)
    {
        Wert wert;
-       uint64_t stelle;
+       uint64_t randomisiert = SchluesselAdapter::randomisiere(schluessel);   
+       uint64_t stelle = randomisiert & (m_kapazitaet-1);
        if( findeIntern(schluessel,stelle,wert) )
        {
           SchluesselAdapter::loescheEndgueltig(m_eintraege[stelle].m_schluessel);
           WertAdapter::loescheEndgueltig(m_eintraege[stelle].m_wert);
-          char inversMaske = 0xFF ^ (1 << (stelle & 7));
-          m_besetzt[stelle >> 3] &= inversMaske;       
+          loescheInMaske(stelle);       
           m_anzahlBesetzt--;
+
+          //nun muessen noch moeglicherweise "verdraengte" Eintraege "nach vorne geholt" werden
+          Schluessel* verdraengtSchluessel;
+          Wert* verdraengtWert;
+          
+          uint64_t anzahlZuSchieben(0); 
+          uint64_t naechste = stelle+1;
+          do
+          {
+              if( naechste == m_kapazitaet )
+              {
+                  naechste = 0;
+              }
+              if( besetzt(naechste) )
+              {
+                 randomisiert = SchluesselAdapter::randomisiere(m_eintraege[naechste].m_schluessel);
+                 uint64_t eigentlicheStelle = randomisiert & (m_kapazitaet-1);
+                 if( eigentlicheStelle != naechste )
+                 {
+                     anzahlZuSchieben++;                           
+                 }
+              }
+              else break;
+              naechste++;
+          }
+          while(true);
+          verdraengtSchluessel = new Schluessel[anzahlZuSchieben];
+          verdraengtWert       = new Wert[anzahlZuSchieben];
+          if( (verdraengtSchluessel == NULL) ||  (verdraengtWert == NULL))
+          {
+             return false;
+          }
+
+          naechste = stelle+1;
+          uint64_t verdraengtZaehler(0);
+          do
+          {
+              if( naechste == m_kapazitaet )
+              {
+                  naechste = 0;
+              }
+              if( besetzt(naechste) )
+              {
+                 randomisiert = SchluesselAdapter::randomisiere(m_eintraege[naechste].m_schluessel);
+                 uint64_t eigentlicheStelle = randomisiert & (m_kapazitaet-1);
+                 if( eigentlicheStelle != naechste )
+                 {
+                     verdraengtSchluessel[verdraengtZaehler] = m_eintraege[naechste].m_schluessel;
+                     SchluesselAdapter::loesche(m_eintraege[naechste].m_schluessel);
+                     verdraengtWert[verdraengtZaehler++] = m_eintraege[naechste].m_wert;
+                     WertAdapter::loesche(m_eintraege[naechste].m_wert);
+                     loescheInMaske(naechste);  
+                     m_anzahlBesetzt--;                          
+                 }
+              }
+              else break;
+              naechste++;
+          }
+          while(true);
+          for(uint64_t i=0; i < verdraengtZaehler; i++)
+          {
+             trageEin(verdraengtSchluessel[i],verdraengtWert[i]);
+             SchluesselAdapter::loesche(verdraengtSchluessel[i]);
+             WertAdapter::loesche(verdraengtWert[i]);
+          }
+          delete[] verdraengtSchluessel;
+          delete[] verdraengtWert;
           return true;
        }
        return false;
+   }
+  
+   uint64_t anzahl() const 
+   {
+      return m_anzahlBesetzt;
    } 
 
    ~Streufeld()
@@ -244,6 +326,8 @@ public:
        m_kapazitaet = 0;
        m_anzahlBesetzt = 0;
    } 
+
+
 };
 
 #endif

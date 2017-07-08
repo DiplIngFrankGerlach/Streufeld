@@ -66,7 +66,7 @@ int main(int argc,char** argv)
    assert( schluessel == "DDI");
 
 
-   const uint64_t c_anzahlEintrage = 10000;
+   const uint64_t c_anzahlEintrage = 100;
    
    for(uint64_t i=0; i < c_anzahlEintrage; i++)
    {
@@ -89,6 +89,42 @@ int main(int argc,char** argv)
       Zeichenkette wertGefunden;
       assert( sf.finde(schluessel,wertGefunden) );
       assert( wert == wertGefunden );
+   }
+ 
+    uint64_t anzGeloescht(0);
+    for(int64_t i=c_anzahlEintrage-1; i >=0; i--)
+    {
+      if( (i & 1) )
+      {
+         anzGeloescht++;
+         schluessel = "AnfangderZeichenkette_";
+         schluessel.dazuZahl(1000+i,10);
+
+         assert( sf.loesche(schluessel) );
+      }      
+   }
+   assert( sf.anzahl() == c_anzahlEintrage-anzGeloescht);
+
+
+   schluessel = "AnfangderZeichenkette_1064";
+   Zeichenkette wertGefunden;
+   assert( sf.finde(schluessel,wertGefunden) );
+
+   for(int64_t i=c_anzahlEintrage-1; i >=0; i--)
+   {
+      if( (i & 1) == 0)
+      {
+         schluessel = "AnfangderZeichenkette_";
+         schluessel.dazuZahl(1000+i,10);
+
+         wert = "wiesel";
+         wert.dazuZahl(1500+i,10);
+
+
+         Zeichenkette wertGefunden;
+         assert( sf.finde(schluessel,wertGefunden) );
+         assert( wert == wertGefunden );
+      }
    }
 
    
