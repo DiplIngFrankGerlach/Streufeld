@@ -17,8 +17,8 @@
 
 */
 
-#ifndef SUCHFELD
-#define SUCHFELD
+#ifndef STREUFELD
+#define STREUFELD
 
 #include <iostream>
 #include <stdint.h>
