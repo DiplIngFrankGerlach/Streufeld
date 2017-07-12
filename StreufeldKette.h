@@ -1,7 +1,7 @@
 #ifndef STREUFELD_KETTE
 #define STREUFELD_KETTE
 
-
+ 
 /* Streufeld mit Verketteter Liste zur Behandlung von Doppelfaellen
 
    (C) Frank Gerlach 2017
@@ -80,6 +80,7 @@ class StreufeldKette
             kettenZeiger =  &( (*kettenZeiger)->m_doppel );
          }
          *kettenZeiger = einzutragen;
+         m_anzahlBelegt++;
     }
 
 public:
@@ -141,6 +142,7 @@ public:
                    vorigerEintrag->m_doppel = kettenZeiger->m_doppel;
                 }
                 delete kettenZeiger;
+                m_anzahlBelegt--;
                 return true;
             }
             vorigerEintrag = kettenZeiger;

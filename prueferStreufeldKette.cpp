@@ -33,18 +33,18 @@ int main(int argc,char** argv)
    schluessel.dazuZahl(17771);
    assert( schluessel == "AnfangderZeichenkette_0017771");
 
-
+   const uint64_t anzahlPruefungen = 1000000;
      
-   for(uint64_t i=0; i < 100; i++)
+   for(uint64_t i=0; i < anzahlPruefungen; i++)
    {
       schluessel = "AnfangderZeichenkette_";
       schluessel.dazuZahl(i);
       wert       = "Wert_";
       wert.dazuZahl(i+1000);
       
-       sf.trageEin(schluessel,wert); 
+      sf.trageEin(schluessel,wert); 
    }
-   for(int64_t i=99; i >=0; i--)
+   for(int64_t i=anzahlPruefungen-1; i >=0; i--)
    {
       schluessel = "AnfangderZeichenkette_";
       schluessel.dazuZahl(i);
@@ -58,7 +58,7 @@ int main(int argc,char** argv)
  
    
 
-   for(int64_t i=99; i >=0; i--)
+   for(int64_t i=anzahlPruefungen-1; i >=0; i--)
    {
       if( (i % 3) == 0)
       {
@@ -70,7 +70,7 @@ int main(int argc,char** argv)
          assert( sf.loesche(schluessel) );
       }   
    }
-   for(int64_t i=99; i >=0; i--)
+   for(int64_t i=anzahlPruefungen-1; i >=0; i--)
    {
       if( (i % 3) != 0)
       {
