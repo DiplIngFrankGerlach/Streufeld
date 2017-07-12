@@ -102,8 +102,8 @@ int main(int argc,char** argv)
 
          assert( sf.loesche(schluessel) );
       }      
-   }
-   assert( sf.anzahl() == c_anzahlEintrage-anzGeloescht);
+    }
+    assert( sf.anzahl() == c_anzahlEintrage-anzGeloescht);
 
 
    schluessel = "AnfangderZeichenkette_1064";
@@ -125,6 +125,34 @@ int main(int argc,char** argv)
          assert( sf.finde(schluessel,wertGefunden) );
          assert( wert == wertGefunden );
       }
+   }
+   sf.loescheFeld();
+
+   assert(sf.anzahl() == 0);
+   
+
+
+   for(uint64_t i=0; i < c_anzahlEintrage; i++)
+   {
+      schluessel = "AnfangderZeichenkette_";
+      schluessel.dazuZahl(1000+i,10);
+
+      wert = "wiesel";
+      wert.dazuZahl(1500+i,10);
+      
+      assert( sf.trageEin(schluessel,wert) );
+   }
+   for(int64_t i=c_anzahlEintrage-1; i >=0; i--)
+   {
+      schluessel = "AnfangderZeichenkette_";
+      schluessel.dazuZahl(1000+i,10);
+
+      wert = "wiesel";
+      wert.dazuZahl(1500+i,10);
+  
+      Zeichenkette wertGefunden;
+      assert( sf.finde(schluessel,wertGefunden) );
+      assert( wert == wertGefunden );
    }
 
    

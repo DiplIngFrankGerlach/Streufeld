@@ -139,6 +139,11 @@ private:
    {
        bool erfolg; 
        uint64_t neuKapazitaet = m_kapazitaet << 1;
+
+       if(neuKapazitaet < 2 )
+       {
+          neuKapazitaet  = 2;
+       }
        if( neuKapazitaet < m_kapazitaet )
        {
           return false;
@@ -177,6 +182,28 @@ private:
        return true;
    }
 
+   void loescheFeldEndgueltig()
+   {
+
+       for(uint64_t stelle=0; stelle < m_kapazitaet; stelle++)
+       {
+          if( besetzt(stelle) )
+          {
+              SchluesselAdapter::loescheEndgueltig(m_eintraege[stelle].m_schluessel);
+              WertAdapter::loescheEndgueltig(m_eintraege[stelle].m_wert);
+              loescheInMaske(stelle); 
+          }
+       }
+       
+       delete[] m_eintraege;
+       m_eintraege = NULL;
+       delete[] m_besetzt;
+       m_besetzt = NULL;
+       m_kapazitaet = 0;
+       m_anzahlBesetzt = 0;
+ 
+   }
+
 public:
    bool finde(const Schluessel& schluessel,
               Wert& wert) 
@@ -188,6 +215,7 @@ public:
 
    bool trageEin(const Schluessel& schluessel, const Wert& wert)
    {
+      
       uint64_t randomisiert = SchluesselAdapter::randomisiere(schluessel);   
       uint64_t stelle = randomisiert & (m_kapazitaet-1);
       Wert altWert;
@@ -303,28 +331,30 @@ public:
        }
        return false;
    }
-  
+    
    uint64_t anzahl() const 
    {
       return m_anzahlBesetzt;
    } 
 
-   ~Streufeld()
+   void loescheFeld()
    {
        for(uint64_t stelle=0; stelle < m_kapazitaet; stelle++)
        {
-          if( m_besetzt[stelle >> 3] & (1 << (stelle & 7)) )
+          if( besetzt(stelle) )
           {
-              SchluesselAdapter::loescheEndgueltig(m_eintraege[stelle].m_schluessel);
-              WertAdapter::loescheEndgueltig(m_eintraege[stelle].m_wert);
+              SchluesselAdapter::loesche(m_eintraege[stelle].m_schluessel);
+              WertAdapter::loesche(m_eintraege[stelle].m_wert);
+              loescheInMaske(stelle); 
           }
        }
-       delete[] m_eintraege;
-       m_eintraege = NULL;
-       delete[] m_besetzt;
-       m_besetzt = NULL;
-       m_kapazitaet = 0;
-       m_anzahlBesetzt = 0;
+   }
+
+   
+
+   ~Streufeld()
+   {
+       loescheFeldEndgueltig();
    } 
 
 
