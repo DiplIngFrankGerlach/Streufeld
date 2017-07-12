@@ -55,6 +55,35 @@ int main(int argc,char** argv)
       assert( sf.finde(schluessel,gefunden) );
       assert( wert == gefunden );
    }
+ 
+   
+
+   for(int64_t i=99; i >=0; i--)
+   {
+      if( (i % 3) == 0)
+      {
+         schluessel = "AnfangderZeichenkette_";
+         schluessel.dazuZahl(i);
+         wert       = "Wert_";
+         wert.dazuZahl(i+1000);
+
+         assert( sf.loesche(schluessel) );
+      }   
+   }
+   for(int64_t i=99; i >=0; i--)
+   {
+      if( (i % 3) != 0)
+      {
+         schluessel = "AnfangderZeichenkette_";
+         schluessel.dazuZahl(i);
+         wert       = "Wert_";
+         wert.dazuZahl(i+1000);
+
+         Zeichenkette gefunden;
+         assert( sf.finde(schluessel,gefunden) );
+         assert( wert == gefunden );
+      }   
+   }
    
    cout << "Pruefung der Streufeld-Klasse erfolgreich" << endl;
 }

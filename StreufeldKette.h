@@ -119,6 +119,53 @@ public:
        eintrag->m_wert = wert;
        trageEin(m_streufeld,m_groesse,eintrag);
     }
+
+    bool loesche(const Schluessel& schluessel)
+    {
+         uint64_t randomisiert   = SchluesselAdapter::randomisiere(schluessel);
+         uint64_t stelle         = randomisiert & (m_groesse-1);
+         Eintrag* kettenZeiger   = m_streufeld[stelle];
+         Eintrag* vorigerEintrag = NULL;
+         while(kettenZeiger != NULL )
+         {
+            if( SchluesselAdapter::gleich( kettenZeiger->m_schluessel,schluessel) )
+            {
+                WertAdapter::loescheEndgueltig(kettenZeiger->m_wert);
+                SchluesselAdapter::loescheEndgueltig(kettenZeiger->m_schluessel);
+                if( vorigerEintrag == NULL )
+                {
+                    m_streufeld[stelle] = kettenZeiger->m_doppel;
+                }
+                else
+                {
+                   vorigerEintrag->m_doppel = kettenZeiger->m_doppel;
+                }
+                delete kettenZeiger;
+                return true;
+            }
+            vorigerEintrag = kettenZeiger;
+            kettenZeiger   = kettenZeiger->m_doppel;
+         }
+         return false; 
+    }
+    ~StreufeldKette()
+    {
+        for(uint64_t stelle=0; stelle < m_groesse; stelle++ )
+        {
+            Eintrag* kettenZeiger = m_streufeld[stelle];
+            while(kettenZeiger != NULL )
+            {
+               Eintrag* naechster =  kettenZeiger->m_doppel;
+               WertAdapter::loescheEndgueltig(kettenZeiger->m_wert);
+               SchluesselAdapter::loescheEndgueltig(kettenZeiger->m_schluessel); 
+               delete kettenZeiger;
+               kettenZeiger = naechster;
+            }
+        }
+        delete[] m_streufeld;
+        m_groesse = 0;
+        m_anzahlBelegt = 0;
+    }
 };
 
 
