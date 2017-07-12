@@ -44,6 +44,8 @@ int main(int argc,char** argv)
       
       sf.trageEin(schluessel,wert); 
    }
+   assert(sf.anzahl() == anzahlPruefungen);
+
    for(int64_t i=anzahlPruefungen-1; i >=0; i--)
    {
       schluessel = "AnfangderZeichenkette_";
@@ -55,9 +57,10 @@ int main(int argc,char** argv)
       assert( sf.finde(schluessel,gefunden) );
       assert( wert == gefunden );
    }
+   assert(sf.anzahl() == anzahlPruefungen);
  
    
-
+   uint64_t loeschZaehler(0);
    for(int64_t i=anzahlPruefungen-1; i >=0; i--)
    {
       if( (i % 3) == 0)
@@ -68,8 +71,12 @@ int main(int argc,char** argv)
          wert.dazuZahl(i+1000);
 
          assert( sf.loesche(schluessel) );
+         loeschZaehler++;
       }   
    }
+   assert(sf.anzahl() == (anzahlPruefungen-loeschZaehler) );
+
+
    for(int64_t i=anzahlPruefungen-1; i >=0; i--)
    {
       if( (i % 3) != 0)
