@@ -61,7 +61,8 @@ class StreufeldKette
             {
                Eintrag* naechster =  kettenZeiger->m_doppel;
                kettenZeiger->m_doppel = NULL;
-               trageEin(neuFeld,neueGroesse,kettenZeiger);
+               bool schlGef;
+               trageEin(neuFeld,neueGroesse,kettenZeiger,schlGef);
                kettenZeiger = naechster;
             }
         }
@@ -70,7 +71,10 @@ class StreufeldKette
         m_groesse = neueGroesse;
     }
 
-    static void trageEin(Eintrag** streuFeld,uint64_t neueGroesse,Eintrag* einzutragen)
+    static void trageEin(Eintrag** streuFeld,
+                uint64_t neueGroesse,
+                Eintrag* einzutragen,
+                bool& schluesselGefunden)
     {
          uint64_t randomisiert  = SchluesselAdapter::randomisiere(einzutragen->m_schluessel);
          uint64_t stelle        = randomisiert & (neueGroesse-1);
@@ -83,11 +87,13 @@ class StreufeldKette
                 (*kettenZeiger)->m_wert = einzutragen->m_wert;
                 SchluesselAdapter::loescheEndgueltig(einzutragen->m_schluessel);
                 delete einzutragen;
+                schluesselGefunden = true;
                 return;
             } 
             kettenZeiger =  &( (*kettenZeiger)->m_doppel );
          }
          *kettenZeiger = einzutragen;         
+         schluesselGefunden = false;
     }
 
 public:
@@ -125,8 +131,12 @@ public:
        }
        eintrag->m_schluessel = schluessel;
        eintrag->m_wert = wert;
-       trageEin(m_streufeld,m_groesse,eintrag);
-       m_anzahlBelegt++;
+       bool schluesselGefunden;
+       trageEin(m_streufeld,m_groesse,eintrag,schluesselGefunden);
+       if( !schluesselGefunden )
+       {
+          m_anzahlBelegt++;
+       }
     }
 
     bool loesche(const Schluessel& schluessel)

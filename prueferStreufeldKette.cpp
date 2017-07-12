@@ -33,7 +33,7 @@ int main(int argc,char** argv)
    schluessel.dazuZahl(17771);
    assert( schluessel == "AnfangderZeichenkette_0017771");
 
-   const uint64_t anzahlPruefungen = 1000000;
+   const uint64_t anzahlPruefungen = 10000;
      
    for(uint64_t i=0; i < anzahlPruefungen; i++)
    {
@@ -43,6 +43,7 @@ int main(int argc,char** argv)
       wert.dazuZahl(i+1000);
       
       sf.trageEin(schluessel,wert); 
+      sf.trageEin(schluessel,wert); //test doppeleintragung
    }
    assert(sf.anzahl() == anzahlPruefungen);
 
