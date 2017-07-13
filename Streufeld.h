@@ -48,7 +48,7 @@ public:
    Streufeld(uint64_t kapazitaet,bool& erfolg):m_besetzt(NULL),
                                                m_kapazitaet(0),
                                                m_neuHashSchwelle(0),
-                                               m_anzahlBesetzt(0),                                               
+                                               m_anzahlBesetzt(0),    
                                                m_eintraege(NULL)
    {
      if( kapazitaet < 2)
