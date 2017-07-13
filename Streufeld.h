@@ -348,6 +348,7 @@ public:
               loescheInMaske(stelle); 
           }
        }
+       m_anzahlBesetzt  = 0;
    }
 
    
