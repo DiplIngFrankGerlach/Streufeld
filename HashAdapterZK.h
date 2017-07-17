@@ -43,4 +43,7 @@ public:
   }
 };
 
+
+typedef Streufeld<Zeichenkette,Zeichenkette,SchlAdapterZK,WertAdapterZK> SFzkzk;
+
 #endif

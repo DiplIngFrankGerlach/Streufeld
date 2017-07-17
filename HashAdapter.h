@@ -33,4 +33,20 @@ public:
    }
 };
 
+
+/* Adapter-Klasse fuer Wert-Objekte vom Typ uint64_t */
+class WertAdapterInt
+{
+public:
+  static void loesche(const uint64_t& wert)
+  {
+      wert = 0;
+  }
+
+  static void loescheEndgueltig(const uint64_t& wert)
+  {
+      wert = 0;
+  }
+};
+
 #endif

@@ -91,7 +91,7 @@ private:
 
 
 
-   bool besetzt(uint64_t stelle)
+   bool besetzt(uint64_t stelle) const
    {
      return m_besetzt[stelle >> 3] & ( 1 << (stelle & 7) );
    }
@@ -108,7 +108,7 @@ private:
    */
    bool findeIntern( const Schluessel& schluessel, 
                      uint64_t &stelle, 
-                     Wert& wert)
+                     Wert& wert) const
    {
       //cout << "findeIntern: m_anzahlBesetzt:" << m_anzahlBesetzt << " schluessel:" << schluessel << 
       //        " stelle:" << stelle << endl;
@@ -206,7 +206,7 @@ private:
 
 public:
    bool finde(const Schluessel& schluessel,
-              Wert& wert) 
+              Wert& wert)  const
    {
       uint64_t randomisiert = SchluesselAdapter::randomisiere(schluessel);
       uint64_t stelle = randomisiert & (m_kapazitaet-1);

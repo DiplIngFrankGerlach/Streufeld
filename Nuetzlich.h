@@ -2,7 +2,10 @@
 #define NUETZLICH
 
 #include <stdint.h>
+#include "zk.h"
 
 uint64_t naechstGroessereZweierPotenz(uint64_t zahl);
+
+bool leseZahl(Zeichenkette& zk,uint64_t& zahl);
 
 #endif
