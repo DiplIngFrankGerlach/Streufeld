@@ -14,4 +14,8 @@ bool istBst(char zeichen);
 
 bool istKopfzeilenWertZeichen(char zeichen);
 
+bool istHostBst(char z);
+
+bool istZiffer(char z);
+
 #endif
